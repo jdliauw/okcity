@@ -17,15 +17,14 @@ zips = ['28801', 	# asheville, nc
 		'98401'		# tacoma, wa
 	]
 
-def login():
+def login(driver):
 	
 	# username = raw_input("username: ")
 	username = 'jdliauw@gmail.com'
-	os.system("stty -echo")
-	password = raw_input("password: ")
-	os.system("stty echo")
+	# os.system("stty -echo")
+	# password = raw_input("password: ")
+	# os.system("stty echo")
 
-	driver = webdriver.Firefox()
 	driver.get("http://www.okcupid.com")
 	driver.find_element_by_id('open_sign_in_button').click()
 
@@ -33,18 +32,24 @@ def login():
 		driver.find_element_by_id('login_username').send_keys(username)
 		driver.find_element_by_id('login_password').send_keys(password)
 		driver.find_element_by_id('sign_in_button').click()
+
+		time.sleep(1)
+		driver.get("https://www.okcupid.com/match")
+
 	except:
 		print 'Login failure, exiting\n'
 
-	# move within try after match_page functions properly
-	match_page(driver)
-
-def match_page(driver):
-	time.sleep(1)
-	driver.get("https://www.okcupid.com/match")
+def sort_by_match(driver):
 	
-	driver.find_element_by_css_selector("[class='match-filters-in-results'] div[class='chosen-container chosen-container-single'").click()
-	print 'terminated here'
+	# click dropdown
+	css = "[class='match-filters-in-results'] div[class='chosen-container chosen-container-single']"
+	driver.find_element_by_css_selector(css).click()
+
+	# sort by match
+	css = "[class='chosen-container chosen-container-single chosen-with-drop chosen-container-active'] ul li:nth-child(2)"
+	driver.find_element_by_css_selector(css).click()
 
 if __name__ == "__main__":
-	login()
+	driver = webdriver.Firefox()
+	login(driver)
+	sort_by_match(driver)
