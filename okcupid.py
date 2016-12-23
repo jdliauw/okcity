@@ -65,6 +65,13 @@ def count_matches(driver):
 	
 	time.sleep(1)
 
+	names = driver.find_elements_by_css_selector("div[class='username'] a")
+	print 'len names:', len(names)
+
+	for name in names:
+		print name.text
+		print 'www.okcupid.com/profile/{0}'.format(name.text)
+
 	images = driver.find_elements_by_css_selector("span[class='fadein-image image_wrapper loaded'] img")
 	print 'len images:', len(images)
 
