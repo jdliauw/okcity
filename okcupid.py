@@ -14,7 +14,6 @@ def login():
 	os.system("stty -echo")
 	password = raw_input("password: ")
 	os.system("stty echo")
-	print '\n'
 
 	driver = webdriver.Firefox()
 	driver.get("http://www.okcupid.com")
@@ -78,12 +77,17 @@ def count_matches(driver):
 	for age in ages:
 		print age.text
 
-	# percentages = driver.find_elements_by_css_selector("div[class='match-results-cards'] div")
-	percentages = driver.find_elements_by_css_selector("span[class='percentage']")
-	print 'len percentages (x2):', len(percentages)
+	matches = driver.find_elements_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']")
+	print 'len matches:', len(matches)
 
-	for percent in percentages:
-		print int(percent.text.replace('%', ''))
+	for match in matches:
+		print int(match.text.replace('%', ''))
+
+	enemies = driver.find_elements_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']")
+	print 'len enemies:', len(enemies)
+
+	for enemy in enemies:
+		print int(enemy.text.replace('%', ''))
 
 def cycle_cities(driver):
 
