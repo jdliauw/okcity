@@ -61,40 +61,57 @@ def select_city(driver, zip):
 	time.sleep(1)
 	css = "span[class='filter-wrapper filter-location-locale']"
 
-def count_matches(driver):
-	
+class Match:
+	name = None
+	url = None
+	age = None
+	image = None
+	match = None
+	enemy = None
+
+	def __init__(self, name, url, age, image, match, enemy):
+		self.name = name
+		self.url = url
+		self.image = image
+		self.age = age
+		self.match = match
+		self.enemy = enemy
+
+def store_matches(driver, match_list):
+
 	time.sleep(1)
 
-	names = driver.find_elements_by_css_selector("div[class='username'] a")
-	print 'len names:', len(names)
+	users = driver.find_elements_by_css_selector("div[class='match_card_wrapper user-not-hidden matchcard-user']")
 
-	for name in names:
-		print name.text
-		print 'www.okcupid.com/profile/{0}'.format(name.text)
+	for user in users:
+		name = user.find_element_by_css_selector("div[class='username'] a").text
+		if name not in match_list:
+			url = 	'www.okcupid.com/profile/{0}'.format(name)
+			age = 	user.find_element_by_css_selector("span[class='age']").text
+			image = user.find_element_by_css_selector("span[class='fadein-image image_wrapper loaded'] img").get_attribute('src')
+			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
+			enemy = int(user.find_element_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']").text.replace('%', ''))
+			match_list.append(Match(name, url, age, image, match, enemy))
 
-	images = driver.find_elements_by_css_selector("span[class='fadein-image image_wrapper loaded'] img")
-	print 'len images:', len(images)
+	last_index = len(match_list)-1
 
-	for image in images:
-		print image.get_attribute('src')
+	if match_list[last_index].match >= 90:
+		print "you ain't done yet"
+		driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+		time.sleep(1)
+		driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+		print 'last =', match_list[last_index].name
+		store_matches(driver, match_list)
+	else:
+		print "-----\nFINAL\n-----" 
+		for match in match_list:
+			print match.name
+			print match.url
+			print match.age
+			print match.image
+			print match.match
+			print match.enemy
 
-	ages = driver.find_elements_by_css_selector("span[class='age']")
-	print 'len ages:', len(ages)
-
-	for age in ages:
-		print age.text
-
-	matches = driver.find_elements_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']")
-	print 'len matches:', len(matches)
-
-	for match in matches:
-		print int(match.text.replace('%', ''))
-
-	enemies = driver.find_elements_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']")
-	print 'len enemies:', len(enemies)
-
-	for enemy in enemies:
-		print int(enemy.text.replace('%', ''))
 
 def cycle_cities(driver):
 
@@ -121,4 +138,52 @@ def cycle_cities(driver):
 if __name__ == "__main__":
 	driver = login()
 	sort_by_match(driver)
-	count_matches(driver)
+	print ''
+	store_matches(driver, [])
+
+def count_matches_old(driver, match_list):
+	
+	time.sleep(1)
+
+	names = driver.find_elements_by_css_selector("div[class='username'] a")
+	print 'len names:', len(names)
+
+	for i, name in enumerate(names):
+		if name.text not in match_list:
+			match_list.append(Match(name.text))
+			match_list[i].url = 'www.okcupid.com/profile/{0}'.format(name.text)
+
+	images = driver.find_elements_by_css_selector("span[class='fadein-image image_wrapper loaded'] img")
+	print 'len images:', len(images)
+
+	for i, image in enumerate(images):
+		match_list[i].image = image.get_attribute('src')
+		# print image.get_attribute('src')
+
+	ages = driver.find_elements_by_css_selector("span[class='age']")
+	print 'len ages:', len(ages)
+
+	for i, age in enumerate(ages):
+		match_list[i].age = age.text
+		# print age.text
+
+	matches = driver.find_elements_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']")
+	print 'len matches:', len(matches)
+
+	for i, match in enumerate(matches):
+		match_list[i].match = int(match.text.replace('%', ''))
+		# print int(match.text.replace('%', ''))
+
+	enemies = driver.find_elements_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']")
+	print 'len enemies:', len(enemies)
+
+	for i, enemy in enumerate(enemies):
+		match_list[i].enemy = int(enemy.text.replace('%', ''))
+		# print int(enemy.text.replace('%', ''))
+
+	print '-----'
+
+	for match in match_list:
+		for property in (match.name, match.url, match.image, match.age, match.match, match.enemy):
+			print property
+		print '-----'
