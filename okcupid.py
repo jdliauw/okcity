@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+# from selenium.webdriver.common.keys import Keys
 import os, time
 
 """
@@ -14,21 +14,17 @@ def login():
 	os.system("stty -echo")
 	password = raw_input("password: ")
 	os.system("stty echo")
+	print '\n'
 
 	driver = webdriver.Firefox()
 	driver.get("http://www.okcupid.com")
 	driver.find_element_by_id('open_sign_in_button').click()
+	driver.find_element_by_id('login_username').send_keys(username)
+	driver.find_element_by_id('login_password').send_keys(password)
+	driver.find_element_by_id('sign_in_button').click()
 
-	try:
-		driver.find_element_by_id('login_username').send_keys(username)
-		driver.find_element_by_id('login_password').send_keys(password)
-		driver.find_element_by_id('sign_in_button').click()
-
-		time.sleep(1)
-		driver.get("https://www.okcupid.com/match")
-
-	except:
-		print 'Login failure, exiting\n'
+	time.sleep(1)
+	driver.get("https://www.okcupid.com/match")
 
 	return driver
 
@@ -41,6 +37,9 @@ def sort_by_match(driver):
 	# sort by match
 	css = "[class='chosen-container chosen-container-single chosen-with-drop chosen-container-active'] ul li:nth-child(2)"
 	driver.find_element_by_css_selector(css).click()
+
+	driver.find_element_by_css_selector("span[class='order-by-label']").click()
+	driver.get("https://www.okcupid.com/match")
 
 def select_city(driver, zip):
 
@@ -60,9 +59,31 @@ def select_city(driver, zip):
 	css = "input[name='lquery']"
 	driver.find_element_by_css_selector(css).send_keys(zip)
 
+	time.sleep(1)
+	css = "span[class='filter-wrapper filter-location-locale']"
+
 def count_matches(driver):
 	
-	pass
+	time.sleep(1)
+
+	images = driver.find_elements_by_css_selector("span[class='fadein-image image_wrapper loaded'] img")
+	print 'len images:', len(images)
+
+	for image in images:
+		print image.get_attribute('src')
+
+	ages = driver.find_elements_by_css_selector("span[class='age']")
+	print 'len ages:', len(ages)
+
+	for age in ages:
+		print age.text
+
+	# percentages = driver.find_elements_by_css_selector("div[class='match-results-cards'] div")
+	percentages = driver.find_elements_by_css_selector("span[class='percentage']")
+	print 'len percentages (x2):', len(percentages)
+
+	for percent in percentages:
+		print int(percent.text.replace('%', ''))
 
 def cycle_cities(driver):
 
@@ -88,4 +109,5 @@ def cycle_cities(driver):
 
 if __name__ == "__main__":
 	driver = login()
+	sort_by_match(driver)
 	count_matches(driver)
