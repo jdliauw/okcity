@@ -59,7 +59,8 @@ def select_city(driver, zip):
 	driver.find_element_by_css_selector(css).send_keys(zip)
 
 	time.sleep(1)
-	css = "span[class='filter-wrapper filter-location-locale']"
+	css = "nav[id='navigation']"
+	driver.find_element_by_css_selector(css).click()
 
 class Match:
 	name = None
@@ -79,67 +80,80 @@ class Match:
 
 def store_matches(driver, match_list):
 
+	hacky_flag = True
+	names = []
 	time.sleep(1)
 
 	users = driver.find_elements_by_css_selector("div[class='match_card_wrapper user-not-hidden matchcard-user']")
 
+	for match in match_list:
+		names.append(match.name)
+
 	for user in users:
 		name = user.find_element_by_css_selector("div[class='username'] a").text
-		if name not in match_list:
+		
+		try:
+			print 'entered try'
+			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
+			print 'exit try'
+		except:
+			print 'entered except, set flag'
+			hacky_flag = False
+			break
+
+		if name not in names and match >= 90 and hacky_flag:
 			url = 	'www.okcupid.com/profile/{0}'.format(name)
 			age = 	user.find_element_by_css_selector("span[class='age']").text
-			image = user.find_element_by_css_selector("span[class='fadein-image image_wrapper loaded'] img").get_attribute('src')
-			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
+			image = user.find_element_by_css_selector("span[class='fadein-image image_wrapper loaded'] img").get_attribute('src')			
 			enemy = int(user.find_element_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']").text.replace('%', ''))
 			match_list.append(Match(name, url, age, image, match, enemy))
+			names.append(name)
+			print 'Successfully stored: {0}'.format(match_list[-1].name)
 
 	last_index = len(match_list)-1
 
-	if match_list[last_index].match >= 90:
-		print "you ain't done yet"
+	if match_list[last_index].match >= 90 and hacky_flag:
+		print "Loading more matches..."
 		driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 		time.sleep(1)
-		driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-		print 'last =', match_list[last_index].name
 		store_matches(driver, match_list)
 	else:
+		driver.execute_script("window.scrollTo(0, 0);")
 		print "-----\nFINAL\n-----" 
 		for match in match_list:
-			print match.name
-			print match.url
-			print match.age
-			print match.image
-			print match.match
-			print match.enemy
-
+			print match.name, match.url, match.age, match.image, match.match, match.enemy
 
 def cycle_cities(driver):
 
-	zips = ["28801", 	# asheville, nc
-		"94701",		# berkeley, ca
-		"80301", 		# boulder, co
-		"02108", 		# boston, ma
-		"95616",		# davis, ca
-		"80123", 		# denver, co
-		"32826",  		# orlando, fl
-		"04101", 		# portland, me
-		"97201", 		# portland, or
-		"02901",		# providence, ri
-		"94101",		# san francisco, ca
-		"90401",		# santa monica, ca
-		"98101", 		# seattle, wa
-		"98401"			# tacoma, wa
+	zips = [
+		"94701",		# berkeley, ca <--- delete when finished testing
+		# "28801", 		# asheville, nc
+		# "94701",		# berkeley, ca
+		# "80301", 		# boulder, co
+		# "02108", 		# boston, ma
+		# "95616",		# davis, ca
+		# "80123", 		# denver, co
+		# "32826",  	# orlando, fl
+		# "04101", 		# portland, me
+		# "97201", 		# portland, or
+		# "02901",		# providence, ri
+		# "94101",		# san francisco, ca
+		# "90401",		# santa monica, ca
+		# "98101", 		# seattle, wa
+		# "98401"		# tacoma, wa
 	]
 
 	for zip in zips:
 		select_city(driver, zip)
 		time.sleep(1)
+		store_matches(driver, [])
 
 if __name__ == "__main__":
 	driver = login()
 	sort_by_match(driver)
 	print ''
-	store_matches(driver, [])
+	cycle_cities(driver)
+	# store_matches(driver, [])
 
 def count_matches_old(driver, match_list):
 	
