@@ -1,11 +1,27 @@
 from selenium import webdriver
-# from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
 import os, time
 
 """
-- Parse matches for all > 90%
 - Place cookie so don't login every time
 """
+
+class Match:
+	name = None
+	url = None
+	age = None
+	image = None
+	match = None
+	enemy = None
+
+	def __init__(self, name, url, age, image, match, enemy):
+		self.name = name
+		self.url = url
+		self.image = image
+		self.age = age
+		self.match = match
+		self.enemy = enemy
 
 def login():
 	
@@ -22,7 +38,7 @@ def login():
 	driver.find_element_by_id('login_password').send_keys(password)
 	driver.find_element_by_id('sign_in_button').click()
 
-	time.sleep(1)
+	time.sleep(.5)
 	driver.get("https://www.okcupid.com/match")
 
 	return driver
@@ -59,28 +75,10 @@ def select_city(driver, zip):
 	driver.find_element_by_css_selector(css).send_keys(zip)
 
 	time.sleep(1)
-	css = "nav[id='navigation']"
-	driver.find_element_by_css_selector(css).click()
-
-class Match:
-	name = None
-	url = None
-	age = None
-	image = None
-	match = None
-	enemy = None
-
-	def __init__(self, name, url, age, image, match, enemy):
-		self.name = name
-		self.url = url
-		self.image = image
-		self.age = age
-		self.match = match
-		self.enemy = enemy
+	driver.find_element_by_css_selector("head")
 
 def store_matches(driver, match_list):
 
-	hacky_flag = True
 	names = []
 	time.sleep(1)
 
@@ -89,19 +87,21 @@ def store_matches(driver, match_list):
 	for match in match_list:
 		names.append(match.name)
 
-	for user in users:
-		name = user.find_element_by_css_selector("div[class='username'] a").text
-		
-		try:
-			print 'entered try'
-			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
-			print 'exit try'
-		except:
-			print 'entered except, set flag'
-			hacky_flag = False
-			break
+	print 'num matches (including duplicates): {0}'.format(len(names))
 
-		if name not in names and match >= 90 and hacky_flag:
+	for user in users:
+		name = user.find_element_by_css_selector("div[class='username'] a").text.encode('utf-8')
+
+		try:
+			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
+		except:
+			print 'Entered except'
+			hack = driver.find_element_by_css_selector("span[class='nav-user-image-thumb']")
+			hack.click()
+			hack.click()
+			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
+
+		if name not in names and match >= 90:
 			url = 	'www.okcupid.com/profile/{0}'.format(name)
 			age = 	user.find_element_by_css_selector("span[class='age']").text
 			image = user.find_element_by_css_selector("span[class='fadein-image image_wrapper loaded'] img").get_attribute('src')			
@@ -109,12 +109,22 @@ def store_matches(driver, match_list):
 			match_list.append(Match(name, url, age, image, match, enemy))
 			names.append(name)
 			print 'Successfully stored: {0}'.format(match_list[-1].name)
+		elif name in names:
+			print 'Not storing: {0}, already stored'.format(name) 
+		elif match < 90:
+			print 'Not storing: {0}, match < 90%'.format(name)
+		else:
+			print 'Not storing: {0}, unknown reason'.format(name)
+
 
 	last_index = len(match_list)-1
 
-	if match_list[last_index].match >= 90 and hacky_flag:
+	if match >= 88:
 		print "Loading more matches..."
-		driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+		for i in range(15):
+			driver.find_element_by_tag_name('body').send_keys(Keys.SPACE)
+			time.sleep(.1)
 		time.sleep(1)
 		store_matches(driver, match_list)
 	else:
@@ -144,14 +154,14 @@ def cycle_cities(driver):
 	]
 
 	for zip in zips:
-		select_city(driver, zip)
-		time.sleep(1)
+		# select_city(driver, zip)
+		# time.sleep(1)
 		store_matches(driver, [])
 
 if __name__ == "__main__":
 	driver = login()
-	sort_by_match(driver)
-	print ''
+	# sort_by_match(driver)
+	# print ''
 	cycle_cities(driver)
 	# store_matches(driver, [])
 
