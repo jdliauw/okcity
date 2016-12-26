@@ -31,6 +31,7 @@ def login():
 	password = raw_input("password: ")
 	os.system("stty echo")
 
+	print ''
 	driver = webdriver.Firefox()
 	driver.get("http://www.okcupid.com")
 	driver.find_element_by_id('open_sign_in_button').click()
@@ -75,9 +76,10 @@ def select_city(driver, zip):
 	driver.find_element_by_css_selector(css).send_keys(zip)
 
 	time.sleep(1)
-	driver.find_element_by_css_selector("head")
+	css = "span[class='order-by-label']"
+	driver.find_element_by_css_selector(css).click()
 
-def store_matches(driver, match_list):
+def store_matches(driver, match_list, zip):
 
 	names = []
 	time.sleep(1)
@@ -95,7 +97,12 @@ def store_matches(driver, match_list):
 		try:
 			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
 		except:
-			print 'Entered except'
+			"""
+			TODO
+			Some reason the mouse is placed over a match card, this hides the match percentage/
+			This hack is selecting an element outside of the match card region and unselects. 
+			A better solution can/should be used
+			"""
 			hack = driver.find_element_by_css_selector("span[class='nav-user-image-thumb']")
 			hack.click()
 			hack.click()
@@ -108,38 +115,42 @@ def store_matches(driver, match_list):
 			enemy = int(user.find_element_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']").text.replace('%', ''))
 			match_list.append(Match(name, url, age, image, match, enemy))
 			names.append(name)
-			print 'Successfully stored: {0}'.format(match_list[-1].name)
+			print 'Storing: {0}'.format(match_list[-1].name)
 		elif name in names:
 			print 'Not storing: {0}, already stored'.format(name) 
 		elif match < 90:
 			print 'Not storing: {0}, match < 90%'.format(name)
 		else:
-			print 'Not storing: {0}, unknown reason'.format(name)
-
+			print 'Not storing: {0}, unknown reason. Please debug'.format(name)
 
 	last_index = len(match_list)-1
 
 	if match >= 88:
 		print "Loading more matches..."
 
+		# Hacky, attempt to reduce number of duplicates matches.
 		for i in range(15):
 			driver.find_element_by_tag_name('body').send_keys(Keys.SPACE)
 			time.sleep(.1)
 		time.sleep(1)
-		store_matches(driver, match_list)
+		store_matches(driver, match_list, zip)
 	else:
 		driver.execute_script("window.scrollTo(0, 0);")
 		print "-----\nFINAL\n-----" 
+		
+		output = open('{0}.csv'.format(zip), "w+") 
 		for match in match_list:
-			print match.name, match.url, match.age, match.image, match.match, match.enemy
+			text = '{0},{1},{2},{3},{4},{5}\n'.format(match.name, match.url, match.age, match.image, match.match, match.enemy)
+			output.write(text)
+
+		output.close()
 
 def cycle_cities(driver):
 
 	zips = [
-		"94701",		# berkeley, ca <--- delete when finished testing
-		# "28801", 		# asheville, nc
+		"28801", 		# asheville, nc
 		# "94701",		# berkeley, ca
-		# "80301", 		# boulder, co
+		"80301", 		# boulder, co
 		# "02108", 		# boston, ma
 		# "95616",		# davis, ca
 		# "80123", 		# denver, co
@@ -154,16 +165,14 @@ def cycle_cities(driver):
 	]
 
 	for zip in zips:
-		# select_city(driver, zip)
-		# time.sleep(1)
-		store_matches(driver, [])
+		select_city(driver, zip)
+		time.sleep(1)
+		store_matches(driver, [], zip)
 
 if __name__ == "__main__":
 	driver = login()
-	# sort_by_match(driver)
-	# print ''
+	sort_by_match(driver)
 	cycle_cities(driver)
-	# store_matches(driver, [])
 
 def count_matches_old(driver, match_list):
 	
