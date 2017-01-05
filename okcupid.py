@@ -4,7 +4,7 @@ from selenium.webdriver import ActionChains
 import os, time
 
 """
-- Place cookie so don't login every time
+Place cookie so don't login every time
 """
 
 class Match:
@@ -132,7 +132,7 @@ def store_matches(driver, match_list, zip):
 		for i in range(15):
 			driver.find_element_by_tag_name('body').send_keys(Keys.SPACE)
 			time.sleep(.1)
-		time.sleep(1)
+		time.sleep(2)
 		store_matches(driver, match_list, zip)
 	else:
 		driver.execute_script("window.scrollTo(0, 0);")
@@ -148,20 +148,20 @@ def store_matches(driver, match_list, zip):
 def cycle_cities(driver):
 
 	zips = [
-		"28801", 		# asheville, nc
-		# "94701",		# berkeley, ca
+		"28801", 		# asheville, nc 
+		"94701",		# berkeley, ca
 		"80301", 		# boulder, co
-		# "02108", 		# boston, ma
-		# "95616",		# davis, ca
-		# "80123", 		# denver, co
-		# "32826",  	# orlando, fl
-		# "04101", 		# portland, me
-		# "97201", 		# portland, or
-		# "02901",		# providence, ri
-		# "94101",		# san francisco, ca
-		# "90401",		# santa monica, ca
-		# "98101", 		# seattle, wa
-		# "98401"		# tacoma, wa
+		"02108", 		# boston, ma 8:39
+		"95616",		# davis, ca
+		"80123", 		# denver, co
+		"32826",	  	# orlando, fl 8:44
+		"04101", 		# portland, me
+		"97201", 		# portland, or
+		"02901",		# providence, ri
+		"94101",		# san francisco, ca
+		"90401",		# santa monica, ca
+		"98101", 		# seattle, wa
+		"98401"			# tacoma, wa 9:05, but was idle
 	]
 
 	for zip in zips:
