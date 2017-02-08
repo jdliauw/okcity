@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
-import os, time
+import os, time, pw
 
 """
 Place cookie so don't login every time
@@ -26,9 +26,9 @@ class Match:
 def login():
 	
 	# username = raw_input("username: ")
-	username = 'jdliauw@gmail.com'
+	username = pw.username
 	os.system("stty -echo")
-	password = raw_input("password: ")
+	password = pw.password
 	os.system("stty echo")
 
 	print ''
@@ -154,6 +154,7 @@ def cycle_cities(driver):
 		"02108", 		# boston, ma 8:39
 		"95616",		# davis, ca
 		"80123", 		# denver, co
+		"53203"			# milwaukee, wi
 		"32826",	  	# orlando, fl 8:44
 		"04101", 		# portland, me
 		"97201", 		# portland, or
