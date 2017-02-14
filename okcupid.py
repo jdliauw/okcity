@@ -27,11 +27,11 @@ def login():
 	
 	# username = raw_input("username: ")
 	username = pw.username
-	os.system("stty -echo")
+	# os.system("stty -echo")
 	password = pw.password
-	os.system("stty echo")
+	# os.system("stty echo")
 
-	print ''
+	# print ''
 	driver = webdriver.Firefox()
 	driver.get("http://www.okcupid.com")
 	driver.find_element_by_id('open_sign_in_button').click()
@@ -98,10 +98,8 @@ def store_matches(driver, match_list, zip):
 			match = int(user.find_element_by_css_selector("div[class='percentage_wrapper match'] span[class='percentage']").text.replace('%', ''))
 		except:
 			"""
-			TODO
-			Some reason the mouse is placed over a match card, this hides the match percentage/
-			This hack is selecting an element outside of the match card region and unselects. 
-			A better solution can/should be used
+			Some reason the mouse is placed over a match card, this hides the match percentage
+			This hack is selecting an element outside of the match card region and unselecting
 			"""
 			hack = driver.find_element_by_css_selector("span[class='nav-user-image-thumb']")
 			hack.click()
@@ -111,7 +109,11 @@ def store_matches(driver, match_list, zip):
 		if name not in names and match >= 90:
 			url = 	'www.okcupid.com/profile/{0}'.format(name)
 			age = 	user.find_element_by_css_selector("span[class='age']").text
-			image = user.find_element_by_css_selector("span[class='fadein-image image_wrapper loaded'] img").get_attribute('src')			
+			image = user.find_element_by_css_selector("span[class='fadein-image image_wrapper loaded'] img").get_attribute('src')
+
+			# Store the actual image to the file system
+			# urllib.urlretrieve(image, "test.png")
+
 			enemy = int(user.find_element_by_css_selector("div[class='percentage_wrapper enemy'] span[class='percentage']").text.replace('%', ''))
 			match_list.append(Match(name, url, age, image, match, enemy))
 			names.append(name)
@@ -151,18 +153,18 @@ def cycle_cities(driver):
 		"28801", 		# asheville, nc 
 		"94701",		# berkeley, ca
 		"80301", 		# boulder, co
-		"02108", 		# boston, ma 8:39
+		"02108", 		# boston, ma
 		"95616",		# davis, ca
 		"80123", 		# denver, co
-		"53203"			# milwaukee, wi
-		"32826",	  	# orlando, fl 8:44
+		"53203",		# milwaukee, wi
+		"32826",	  	# orlando, fl
 		"04101", 		# portland, me
 		"97201", 		# portland, or
 		"02901",		# providence, ri
 		"94101",		# san francisco, ca
 		"90401",		# santa monica, ca
 		"98101", 		# seattle, wa
-		"98401"			# tacoma, wa 9:05, but was idle
+		"98401"			# tacoma, wa
 	]
 
 	for zip in zips:
@@ -175,6 +177,7 @@ if __name__ == "__main__":
 	sort_by_match(driver)
 	cycle_cities(driver)
 
+# not called
 def count_matches_old(driver, match_list):
 	
 	time.sleep(1)
